@@ -1,6 +1,6 @@
 package game
 
-import "github.com/Tnze/go-mc/data/block"
+import "github.com/Tnze/go-mc/level/block"
 
 type Section interface {
 	GetBlock(x, y, z int64) *block.Block

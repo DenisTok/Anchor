@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"crypto/cipher"
 
 	"github.com/anchormc/anchor/src/api/game"
@@ -14,7 +15,7 @@ type Client interface {
 	WritePacket(*proto.Packet) error
 	UnmarshalPacket(protocol.VarInt, ...protocol.DataTypeReader) error
 	MarshalPacket(protocol.VarInt, ...protocol.DataTypeWriter) error
-	HandlePackets(Server)
+	HandlePackets(ctx context.Context, server Server)
 	RemoteAddr() string
 	GetPlayer() game.Player
 	SetPlayer(game.Player)

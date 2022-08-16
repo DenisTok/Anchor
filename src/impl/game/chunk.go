@@ -1,9 +1,9 @@
 package game
 
 import (
+	"github.com/Tnze/go-mc/level/block"
 	"math"
 
-	"github.com/Tnze/go-mc/data/block"
 	"github.com/anchormc/anchor/src/api/game"
 )
 

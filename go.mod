@@ -1,9 +1,9 @@
 module github.com/anchormc/anchor
 
-go 1.17
+go 1.18
 
 require (
-	github.com/Tnze/go-mc v1.17.2-0.20220122135609-fee2e0c939a3
+	github.com/Tnze/go-mc v1.18.3-0.20220719154151-5fcac80f8a4e
 	github.com/google/uuid v1.3.0
 	gopkg.in/yaml.v2 v2.4.0
 )

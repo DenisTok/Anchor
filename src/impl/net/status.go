@@ -25,8 +25,8 @@ func Status(server api.Server, client api.Client) error {
 
 	response := data.StatusResponse{
 		Version: data.StatusVersion{
-			Name:     "1.18.1",
-			Protocol: 757,
+			Name:     "1.19",
+			Protocol: 759,
 		},
 		Players: data.StatusPlayers{
 			Online: server.PlayerCount(),

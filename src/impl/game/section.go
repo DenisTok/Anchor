@@ -1,8 +1,8 @@
 package game
 
 import (
-	"github.com/Tnze/go-mc/data/block"
 	"github.com/Tnze/go-mc/level"
+	"github.com/Tnze/go-mc/level/block"
 	"github.com/anchormc/anchor/src/api/game"
 )
 
@@ -19,11 +19,12 @@ func NewEmptySection(i int64) game.Section {
 }
 
 func (s Section) GetBlock(x, y, z int64) *block.Block {
-	state := s.storage.Get(int(x) + int(z)*16 + int(y)*16*16)
-
-	blockID := block.StateID[uint32(state)]
-
-	return block.ByID[blockID]
+	//state := s.storage.Get(int(x) + int(z)*16 + int(y)*16*16)
+	//
+	//blockID := level.StateID[uint32(state)]
+	//
+	//return block.ByID[blockID]
+	return nil
 }
 
 func (s *Section) SetBlock(x, y, z int64, state int) {

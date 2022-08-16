@@ -2,8 +2,10 @@ package net
 
 import (
 	"bytes"
+	"context"
 	"crypto/cipher"
 	"fmt"
+	"github.com/Tnze/go-mc/data/packetid"
 	"io"
 	"net"
 	"sync"
@@ -19,12 +21,16 @@ import (
 )
 
 type Client struct {
+	ctx context.Context
+
 	uuid   uuid.UUID
 	player game.Player
 	conn   net.Conn
 	r      io.Reader
 	w      io.Writer
 	m      *sync.Mutex
+
+	keepAlive time.Time
 }
 
 func NewClient(conn net.Conn) (api.Client, error) {
@@ -35,6 +41,7 @@ func NewClient(conn net.Conn) (api.Client, error) {
 	}
 
 	return &Client{
+		ctx:  nil,
 		uuid: id,
 		conn: conn,
 		r:    conn,
@@ -139,13 +146,19 @@ func (c *Client) MarshalPacket(id protocol.VarInt, values ...protocol.DataTypeWr
 	return c.WritePacket(proto.NewPacket(id, buf.Bytes()))
 }
 
-func (c *Client) HandlePackets(server api.Server) {
+func (c *Client) HandlePackets(ctx context.Context, server api.Server) {
+	nctx, can := context.WithCancel(ctx)
+
+	c.ctx = nctx
+
 	defer (func() {
 		if err := c.Close(); err != nil {
 			log.Error(err)
 		}
 
 		server.RemoveClient(c.UUID())
+
+		can()
 
 		log.Infof("Client %s has disconnected (connected: %d)\n", c.RemoteAddr(), len(server.GetAllClients()))
 	})()
@@ -190,13 +203,68 @@ func (c *Client) HandlePackets(server api.Server) {
 				break
 			}
 
-			<-time.NewTimer(time.Hour).C
+			c.runKeepAlive()
+
+			for {
+				p, err := c.ReadPacket()
+				if err != nil {
+					log.Error(err)
+					break
+				}
+
+				err = c.handleClientPlayPacket(p)
+				if err != nil {
+					log.Error(err)
+					break
+				}
+
+				log.Infof("got packet id: %v\n", p.ID)
+			}
 		}
 	default:
 		{
 			log.Errorf("received unknown next state value from client: %d\n", nextState)
 		}
 	}
+}
+
+func (c *Client) runKeepAlive() {
+	go func() {
+		t := time.NewTicker(time.Second * 5)
+		for {
+			select {
+			case <-c.ctx.Done():
+				return
+			case <-t.C:
+
+			}
+
+			err := c.MarshalPacket(packetid.ClientboundKeepAlive, protocol.Long(time.Now().UnixMilli()))
+			if err != nil {
+				log.Error(err)
+			}
+
+			if time.Since(c.keepAlive) >= time.Second*30 {
+				// todo disconnect
+				log.Infof("disconnected: keep alive timeout\n")
+			}
+		}
+	}()
+}
+
+func (c *Client) handleClientPlayPacket(p *proto.Packet) error {
+	switch p.ID {
+	case packetid.ServerboundKeepAlive:
+		log.Info("got keep alive")
+		keepAliveID := protocol.Long(0)
+		_, err := keepAliveID.Decode(p.Buffer)
+		if err != nil {
+			return err
+		}
+
+		c.keepAlive = time.Now()
+	}
+	return nil
 }
 
 func (c Client) GetPlayer() game.Player {

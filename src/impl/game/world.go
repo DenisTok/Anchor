@@ -2,10 +2,10 @@ package game
 
 import (
 	"fmt"
+	"github.com/Tnze/go-mc/level/block"
 	"io/ioutil"
 	"path"
 
-	"github.com/Tnze/go-mc/data/block"
 	"github.com/Tnze/go-mc/save"
 	"github.com/Tnze/go-mc/save/region"
 	"github.com/anchormc/anchor/src/api/game"

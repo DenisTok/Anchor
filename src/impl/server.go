@@ -1,6 +1,7 @@
 package impl
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"image"
@@ -143,7 +144,7 @@ func (s *Server) AcceptConnections() {
 
 		log.Infof("Received a connection from %s (connected: %d)\n", conn.RemoteAddr(), len(s.clients))
 
-		go client.HandlePackets(s)
+		go client.HandlePackets(context.TODO(), s)
 	}
 }
 
